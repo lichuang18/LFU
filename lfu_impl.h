@@ -20,7 +20,7 @@ typedef struct Node{
 typedef struct Lfulist{
     //u64 cachesize;  /*缓存的容量*/
     u64 lfuListSize;    /*缓存的双向链表节点个数*/
-    int hit;
+    u64 hit;
     Node *Head;   /*缓存的双向链表表头*/
     Node *Tail;   /*缓存的双向链表表尾*/
 }Lfulist;

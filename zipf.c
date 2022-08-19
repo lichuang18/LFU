@@ -39,15 +39,15 @@ void zipf(int k[N], int fr[N],int ord[2][N])//输入是一堆数组  输出是�
             if(k[i] == j) 
             {
                 ++fr[j];//统计得到的频率数组，数组内的数据就是频次，  数组索引 就是频率对应的值
-                //++freq[j];
+                ++freq[j];
             }
         }
         
     }
     //maxsort
-    for(i = 0, j = 0; i < N-1; i ++)
+    for(i = 0, j = 0; i < N; i++)
     {
-        max = -1;
+        max = 0;
         for(j = 0; j < N; j++)
         {
             if(fr[j] > max)

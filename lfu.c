@@ -6,7 +6,7 @@
 #include "lfu.h"
 #include "lfu_impl.h"
 #include <map>
-#define DEBUG 1
+#define DEBUG 0
 #define Cachesize 5
 std::map<u64,Lfulist *> freqMap;
 // 创建一个缓存list 
@@ -84,16 +84,16 @@ static void removeFromList(Lfulist *cache, Node *entry)
         cache->lfuListSize--;
     } else
     { 
-        printf("freq %lld remove!\n",entry->freq);
+        if(DEBUG) printf("freq %lld remove!\n",entry->freq);
         cache = freqMap.find(entry->freq)->second;
 
-        printf("当前的entry:%lld\n",cache->lfuListSize);
+        if(DEBUG) printf("当前的entry:%lld\n",cache->lfuListSize);
         if (cache->lfuListSize==0) {
             return;
         }
         if (entry==cache->Head && entry==cache->Tail) {
             // 链表中仅剩当前一个节点 //  
-            printf("只有一个node!\n");    
+            if(DEBUG) printf("只有一个node!\n");    
             cache->Head = cache->Tail = NULL;
             minfreq = entry -> freq + 1;
         } else if (entry == cache->Head) {
@@ -130,13 +130,13 @@ static Node* insertToListHead(Lfulist *cache, Node *entry)
         if (zongs > Cachesize) {
             //如果缓存满了， 即链表当前节点数已等于缓存容量， 
             //那么需要先删除链表表尾节点， 即淘汰最久没有被访问到的缓存数据单元
-            printf("min freq:%lld\n",minfreq);
+            if(DEBUG) printf("min freq:%lld\n",minfreq);
             removedEntry = freqMap.find(minfreq)->second->Tail;
             removeFromList(freqMap.find(minfreq)->second, freqMap.find(minfreq)->second->Tail);
         }
             //如果当前链表为空链表
         if (cache->Head == NULL && cache->Tail == NULL) {
-            printf("第一次插入必定执行!\n");
+            if(DEBUG) printf("第一次插入必定执行!\n");
             cache->Head = cache->Tail = entry;
             minfreq = entry->freq;//如果往之前清空过的list添加东西，需要让minfreq置为当前freq
         } else { //当前链表非空， 插入表头
@@ -149,11 +149,11 @@ static Node* insertToListHead(Lfulist *cache, Node *entry)
     } else//新的freq level
     {
         
-        printf("第%lld freq层的insert!!!\n",entry->freq);
+        if(DEBUG) printf("第%lld freq层的insert!!!\n",entry->freq);
         
         if(freqMap.find(entry->freq) == freqMap.end())//如果不存在映射，那就创建
         {
-            printf("开始创建freq %lld 的cache映射!!!\n",entry->freq);
+            if(DEBUG) printf("开始创建freq %lld 的cache映射!!!\n",entry->freq);
             void *lfulist;
             if (0 == LfulistCreate(&lfulist))
             {
@@ -248,7 +248,7 @@ int Put(void *lfulist, u64 key, u64 data)
         }
         removeFromList(cache, entry);
         ++entry->freq;//接下来需要将元素从访问频率i层，放到i+1
-        printf("After hit, this data_freq = %lld\n",entry->freq);
+        if(DEBUG) printf("After hit, this data_freq = %lld\n",entry->freq);
         Node *removedEntry = insertToListHead(cache,entry);
         //insertToListHead(cache, entry);
         //updateLRUList(cache, entry);
@@ -342,6 +342,17 @@ u64 lfulistGet(void *lfulist, u64 key)
 
 //调试接口
 */
+
+u64 sum_hit()
+{
+    u64 sum=0;
+    auto it = freqMap.begin();
+    for(it; it != freqMap.end(); it++)
+    {
+        sum = sum + it->second->hit;
+    }
+    return sum;
+}
 //遍历缓存列表， 打印缓存中的数据， 按访问时间从新到旧的顺序输出//
 void lfulistPrint()
 {
@@ -350,15 +361,15 @@ void lfulistPrint()
     u64 zongs = sum_capa();
     for(it ;it != freqMap.end();it++)
     {
-        printf("第%lld频次展示!\n",it->first);
+        if(DEBUG) printf("第%lld频次",it->first);
         cache=it->second;
         if(cache->Head == NULL)
         {
-            printf("this freq level is NULL!\n");
+            if(DEBUG) printf("this freq level is NULL!\n");
         } else
         {   
             if (NULL == cache || 0 == zongs) return;
-            fprintf(stdout, "fre=%lld>>>>>>>>>>>>\n",it->first);
+            fprintf(stdout, "\nfre=%lld>>>>>>>>>>>>\n",it->first);
             fprintf(stdout, "cache (key data):\n");
             Node* entry = cache->Head;
             while (entry) 
@@ -369,5 +380,6 @@ void lfulistPrint()
             fprintf(stdout, "\n<<<<<<<<<<<<<<<\n");
         }
     }  
-    printf("当前缓存容量为:%lld,最小freq层的频率为%lld\n",zongs,minfreq);
+    if(DEBUG) printf("当前缓存容量为:%lld,最小freq层的频率为%lld\n",zongs,minfreq);
+    printf("hit次数为:%lld\n",sum_hit());
 }
