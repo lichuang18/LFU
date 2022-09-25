@@ -1,5 +1,5 @@
-## [LRU_Cache](https://github.com/lichuang18/LFU)
-基于双向链表和哈希表实现的LRU缓存，C语言混合C++实现。参考改编自[https://github.com/lichuang18/LFU](https://github.com/Stand1210/c-LRU-)
+## [LFU_Cache](https://github.com/lichuang18/LFU)
+参考<基于双向链表和哈希表实现的LRU缓存>，C语言混合C++实现。参考改编自[https://github.com/lichuang18/LFU](https://github.com/Stand1210/c-LRU-)
 
 ### 描述
 + LFU缓存置换算法
